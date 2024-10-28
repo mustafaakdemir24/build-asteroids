@@ -1,16 +1,18 @@
 import pygame
 from constants import *
 from circleshape import *
+from shot import Shot
 
 class Player(CircleShape):
     # Automatically adds Player to groups specified in the "containers" class variable
     def __init__(self, x, y):
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
+        self.shoot_timer = 0
 
         # Add this player to the groups specified in the 'containers'
-        if hasattr(self, "containers"):
-            self.add(*self.containers)
+        #if hasattr(self, "containers"):
+        #    self.add(*self.containers)
 
     def triangle(self):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -30,7 +32,17 @@ class Player(CircleShape):
         forward = pygame.Vector2(0,1).rotate(self.rotation)
         self.position += forward * PLAYER_SPEED * dt
 
+    def shoot(self):
+        if self.shoot_timer > 0:
+            return
+        # Reset cooldown timer
+        self.shoot_timer = PLAYER_SHOOT_COOLDOWN
+        shot = Shot(self.position.x, self.position.y)            
+        shot.velocity = pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
+
     def update(self, dt):
+        # Decrease shoot timer by dt each frame
+        self.shoot_timer -= dt
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_a]:
@@ -44,3 +56,7 @@ class Player(CircleShape):
 
         if keys[pygame.K_s]:
             self.move(-dt)
+
+        if keys[pygame.K_SPACE]:
+            self.shoot()
+
